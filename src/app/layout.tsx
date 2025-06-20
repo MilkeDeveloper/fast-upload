@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import { Separator } from "@/components/ui/separator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +27,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-x-hidden`}
       >
-        {children}
+        <Toaster richColors expand={true} position="top-left"/>
+        
+        <main className="min-h-[93vh] flex-1">
+          {children}
+        </main>
+        <footer className="z-50 flex justify-center items-center text-center w-full min-h-[7vh] text-zinc-400 font-bold bg-zinc-900 gap-2">
+                    <span className="font-normal">Developed by </span>
+                    <Separator orientation="vertical" className="border-green-700 border-1 max-h-[30px] bg-green-700" />
+                    <span className="text-green-500"> Milke Developer</span>
+                    <span> © 2025</span>
+                </footer>
       </body>
     </html>
   );

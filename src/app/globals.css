@@ -44,9 +44,11 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+
 :root {
+  --plyr-color-main: #22c55e; /* verde, por exemplo */
   --radius: 0.625rem;
-  --background: oklch(24.354% 0.00003 271.152);
+  --background: oklch(25.197% 0.00003 271.152);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);

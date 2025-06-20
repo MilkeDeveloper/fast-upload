@@ -3,12 +3,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import axios, { AxiosProgressEvent } from "axios";
-import { CirclePlus, Copy, Trash2Icon } from "lucide-react";
+import { Copy, PlusCircle, Trash2Icon } from "lucide-react";
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 
 export default function Upload() {
     // Estados para controlar o upload
@@ -17,6 +19,8 @@ export default function Upload() {
     const [sharedUrl, setSharedUrl] = useState<string>();
     const [uploadProgress, setUploadProgress] = useState<number>(0)
     const [uploading, setUploading] = useState(false);
+    const [openmodal, setOpenmodal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
     const inputRef = useRef(null);
     
 
@@ -55,7 +59,12 @@ export default function Upload() {
 
         } catch (err) {
             console.error('Erro no upload', err)
-            alert('Erro no upload')
+            setModalMessage('Erro ao enviar o vídeo. Tente novamente mais tarde.');
+            setOpenmodal(true);
+            setUploadProgress(0); // Reseta progresso em caso de erro
+            setUploading(false); // Define que o upload falhou
+            setVideoFile(null); // Limpa o arquivo de vídeo em caso de erro
+            return;
         }
     }
 
@@ -80,7 +89,8 @@ export default function Upload() {
         // ⚠️ Validação aqui:
         if (!file.type.startsWith("video/")) {
             // mostra um erro, alerta, ou ignora
-            alert("Por favor, envie um arquivo de vídeo.");
+            setModalMessage("Por favor, selecione um arquivo de vídeo válido.");
+            setOpenmodal(true);
             return;
         }
         setVideoFile(file); // por enquanto assume que é vídeo
@@ -101,6 +111,13 @@ export default function Upload() {
         const files = e.target.files;
         if (!files || files.length === 0) return;
         const file = files[0];
+        // ⚠️ Validação aqui:
+        if (!file.type.startsWith("video/")) {
+            // mostra um erro, alerta, ou ignora
+            setModalMessage("Por favor, selecione um arquivo de vídeo válido.");
+            setOpenmodal(true);
+            return;
+        }
         // Faça algo com o arquivo selecionado
         setVideoFile(file);
         setUploading(false); // Reseta o estado de upload
@@ -117,135 +134,195 @@ export default function Upload() {
     };
 
     return (
-        <div className="">
-            <div className="max-h-screen flex justify-center gap-2">
-                <h1 className="pt-4 text-2xl text-green-500 font-bold">Fast</h1>
-                <h1 className="pt-4 text-2xl text-zinc-200 font-bold">Upload</h1>
+        <>
+            <div className="">
+                <div className="max-h-screen flex justify-center gap-2">
+                    <h1 className="pt-4 text-2xl text-green-500 font-bold">Fast</h1>
+                    <h1 className="pt-4 text-2xl text-zinc-200 font-bold">Upload</h1>
 
-            </div>
-            <div className="flex justify-center">
-                <div className="w-[500px]">
-                    <Separator className=" bg-green-800 mt-2"/>
+                </div>
+                <div className="flex justify-center w-full min-w-screen px-6">
+                    <div className="w-[500px]">
+                        <Separator className=" bg-green-800 mt-2"/>
+                    </div>
+
+                </div>
+                <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                    className="flex justify-center pt-7 pb-2 w-full h-full px-6">
+                    <Card className={`cursor-pointer hover:text-gray-400 border-dashed text-gray-400 border-green-600 w-[500px] h-[380px] justify-center items-center 
+                        transition-colors duration-200 ${
+                        isDragging ? 'bg-green-700/20' : ' bg-zinc-800'
+                        
+                    }`}>
+                        
+                        <CardContent onClick={handleCardClick} className="w-full h-full flex flex-col justify-center items-center">
+
+                            <Input 
+                                onChange={handleFileChange} 
+                                ref={inputRef} 
+                                type="file" 
+                                placeholder="Cole o link do vídeo aqui"
+                                className="h-full w-full hidden"
+                            />
+                            {!videoFile && (<PlusCircle className=" w-14 h-14 font-extralight text-zinc-700 mb-4 cursor-pointer hover:text-zinc-600 transition-colors duration-200" />)}
+                            {!videoFile && (
+                            <span className={`${videoFile ? "hidden" : "block"} text-center`}>
+                                Arraste e solte o vídeo aqui
+                                <br />
+                                ou clique para selecionar.
+                            </span>
+                            
+                        )}
+                            
+                            
+                            {videoFile && !uploadProgress && (
+                                <video
+                                key={videoFile.name}
+                                src={URL.createObjectURL(videoFile)}
+                                controls
+                                className="w-full rounded-md border border-green-600 mb-4"
+                                />
+                            )}
+
+                            <div className=" flex flex-col justify-center items-center w-full">
+                                {uploadProgress > 0 && uploadProgress < 100 && (
+                                    <Progress getValueLabel={value => `${value}%`} value={uploadProgress} className="mt-4 w-[250px] h-2 text-white" />
+                                )}
+
+                                {uploadProgress > 0 && (
+                                    
+                                    <span className="text-sm mt-2 text-gray-400">
+                                        {uploadProgress > 0 && uploadProgress < 100 && `Enviando: ${uploadProgress}%`}
+                                    </span>   
+                                )}
+
+
+                                {uploadProgress === 100 && !sharedUrl && (
+                                    <span className="text-sm text-green-600 -mt-2 loading loading-spinner"> </span>
+                                )}
+
+                                {uploadProgress === 100 && !sharedUrl && (
+                                    <span className="text-md font-bold mt-4 text-green-500">
+                                        Gerando link de visualização...
+                                    </span>
+                                )}
+
+                                {videoFile && uploadProgress === 0 && (
+                                    <span className="text-sm font-bold mt-4 text-gray-400">
+                                        {videoFile.name} - {Math.round(videoFile.size / 1024)} KB
+                                    </span>
+                                )}
+                                
+
+                            </div>
+        
+                        </CardContent>
+                        
+                    </Card>
+                    
                 </div>
 
-            </div>
-            <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-                className="flex justify-center pt-7 pb-2">
-                <Card className={`cursor-pointer hover:text-gray-400 border-dashed text-gray-400 border-green-600 w-[500px] h-[380px] justify-center items-center 
-                    transition-colors duration-200 ${
-                    isDragging ? 'bg-green-700/20' : ' bg-zinc-800'
-                    
-                }`}>
-                    
-                    <CardContent onClick={handleCardClick} className="w-full h-full flex flex-col justify-center items-center">
+                
 
-                        <Input 
-                            onChange={handleFileChange} 
-                            ref={inputRef} 
-                            type="file" 
-                            placeholder="Cole o link do vídeo aqui"
-                            className="h-full w-full hidden"
-                        />
-                        {!videoFile && (<CirclePlus className=" w-14 h-14 font-extralight text-zinc-700 mb-4 cursor-pointer hover:text-zinc-600 transition-colors duration-200" />)}
-                        {!videoFile && (
-                        <span className={`${videoFile ? "hidden" : "block"} text-center`}>
-                            Arraste e solte o vídeo aqui
-                            <br />
-                            ou clique para selecionar.
-                        </span>
-                        
-                     )}
-                        
-                        
-                        {videoFile && !uploadProgress && (
-                            <video
-                            key={videoFile.name}
-                            src={URL.createObjectURL(videoFile)}
-                            controls
-                            className="w-full rounded-md border border-green-600 mb-4"
-                            />
-                        )}
+                <Dialog open={openmodal} onOpenChange={setOpenmodal}>
+                    <DialogContent className="bg-zinc-800 text-zinc-400 border-0 border-green-600 focus:ring-0">
+                        <DialogTitle className="text-md font-bold">
+                            Atenção!
+                        </DialogTitle>
+                            <p className="text-sm text-zinc-400 mt-2">
+                                {modalMessage}
+                            </p>
+                        <DialogFooter className="flex justify-center items-center gap-4 pt-4">
+                            <DialogClose asChild>
+                                <Button
+                                    className="font-bold w-[100px] bg-pink-700 hover:bg-pink-900 hover:text-zinc-200 transition-150 ease-in-out active:scale-95">
+                                    Fechar
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
 
-                        <div className=" flex flex-col justify-center items-center w-full">
-                            {uploadProgress > 0 && uploadProgress < 100 && (
-                                <Progress getValueLabel={value => `${value}%`} value={uploadProgress} className="mt-4 w-[250px] h-2 text-white" />
-                            )}
+                    </DialogContent>
+                </Dialog>
 
-                            {uploadProgress > 0 && (
+                <div className="">
+                    {uploading || videoFile && (
+                    <div className="w-full min-w-screen md:flex 2xl:flex block items-center justify-center px-6 space-y-4 md:space-y-0 pt-5 gap-4 ">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button
+                                    disabled={uploading || !videoFile}
+                                    onClick={() => videoFile} 
+                                    className=" cursor-pointer 2xl:w-[240px] md:w-[240px] w-full bg-green-600 hover:bg-green-700 hover:text-zinc-400 transition-150 ease-in-out active:scale-95">
+                                    Upload
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-zinc-800 text-zinc-400 border-0 border-green-600 focus:ring-0">
+                                <DialogTitle className="text-md font-bold">
+                                    Tem certeza que deseja enviar este vídeo?
+                                </DialogTitle>
                                 
-                                <span className="text-sm mt-2 text-gray-400">
-                                    {uploadProgress > 0 && uploadProgress < 100 && `Enviando: ${uploadProgress}%`}
-                                </span>   
-                            )}
+                                
+                                <DialogFooter className="flex justify-center items-center gap-4 pt-4">
+                                    <DialogClose asChild>
+                                        <Button
+                                            disabled={uploading || !videoFile}
+                                            className="font-bold w-[100px] bg-pink-700 hover:bg-pink-900 hover:text-zinc-200 transition-150 ease-in-out active:scale-95">
+                                            Cancelar
+                                        </Button>
+                                    </DialogClose>
+                                    <DialogClose asChild>
+                                        
+                                        <Button
+                                            disabled={uploading || !videoFile}
+                                            onClick={() => {
+                                                handleUpload();
+                                            }}
+                                            className="w-[100px] bg-green-600 hover:bg-green-700 hover:text-zinc-200 transition-150 ease-in-out active:scale-95">
+                                            Confirmar
+                                        </Button>
+                                    </DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
-
-                            {uploadProgress === 100 && !sharedUrl && (
-                                <span className="text-sm text-green-600 -mt-2 loading loading-spinner"> </span>
-                            )}
-
-                            {uploadProgress === 100 && !sharedUrl && (
-                                <span className="text-md font-bold mt-4 text-green-500">
-                                    Gerando link de visualização...
-                                </span>
-                            )}
-
-                            {videoFile && uploadProgress === 0 && (
-                                <span className="text-sm font-bold mt-4 text-gray-400">
-                                    {videoFile.name} - {Math.round(videoFile.size / 1024)} KB
-                                </span>
-                            )}
-                            
-
-                        </div>
-    
-                    </CardContent>
-                    
-                </Card>
-                
-            </div>
-
-            <div className="flex items-center justify-center pt-5 gap-4">
-                <Button
-                    disabled={uploading || !videoFile}
-                    onClick={() => videoFile && handleUpload()} 
-                    className=" cursor-pointer w-[240px] bg-green-600 hover:bg-green-700 hover:text-zinc-400 transition-150 ease-in-out active:scale-95">
-                    Upload
-                </Button>
-                <Button
-                    disabled={uploading || !videoFile}
-                    onClick={() => videoFile && handleDeleteVideo()} 
-                    className=" w-[240px] cursor-pointer bg-transparent hover:bg-transparent border-1 border-pink-700 hover:border-pink-900 text-pink-700 hover:text-pink-900 transition-150 ease-in-out active:scale-95 rounded-sm">
-                    <Trash2Icon className="w-6 h-6  font-extrabold" />
-                </Button>
-                
-            </div>
-
-            <div className="flex justify-center pt-8 text-xl text-white font-bold">
-                {sharedUrl && !videoFile && ( <span>Link gerado: </span> )}        
-            </div>
-
-            <div className="flex justify-center items-center pt-2">
-                {sharedUrl && !videoFile && ( <Card className="flex justify-center w-[720px] h-[42px] relative bg-zinc-800 border border-green-600  transition-colors duration-200">
-                    <input 
-                    value={sharedUrl} 
-                    readOnly
-                    onFocus={e => e.target.select()}
-                    placeholder="Link de compartilhamentro gerado." 
-                    className="h-[38px] pl-4 pr-2 selection:bg-green-600/30 outline-none text-center text-zinc-400 w-[680px] bg-transparent rounded-md">
+                        <Button
+                            disabled={uploading || !videoFile}
+                            onClick={() => videoFile && handleDeleteVideo()} 
+                            className=" 2xl:w-[240px] md:w-[240px] w-full cursor-pointer bg-transparent hover:bg-transparent border-1 border-pink-700 hover:border-pink-900 text-pink-700 hover:text-pink-900 transition-150 ease-in-out active:scale-95 rounded-sm">
+                            <Trash2Icon className="w-6 h-6  font-extrabold" />
+                        </Button>
                         
-                    </input>
-                    <Copy className="absolute right-2 cursor-pointer text-green-700 hover:text-green-400"
-                        onClick={() => {
-                            navigator.clipboard.writeText(sharedUrl);
-                            alert("Link copiado para a área de transferência!");
-                        }} />
-                </Card>
-                    
-                )}
+                    </div>)}
+
+                    <div className="flex justify-center pt-8 text-xl text-white font-bold h">
+                    {sharedUrl && !videoFile && ( <span>Link gerado: </span> )}        
+                    </div>
+
+                    <div className="flex justify-center items-center pt-2 px-6">
+                        {sharedUrl && !videoFile && ( <Card className="flex justify-center w-[720px] xs:w-1/3 max-w-[720px] h-[42px] relative bg-zinc-800 border border-green-600  transition-colors duration-200">
+                            <input 
+                            value={sharedUrl} 
+                            readOnly
+                            onFocus={e => e.target.select()}
+                            placeholder="Link de compartilhamentro gerado." 
+                            className="h-[38px] pr-10 pl-4 2xl:pr-2 selection:bg-green-600/30 outline-none text-center text-zinc-400 2xl:w-[680px] bg-transparent rounded-md">
+                                
+                            </input>
+                            <Copy className="absolute right-2 cursor-pointer text-green-700 hover:text-green-400"
+                                onClick={() =>  { toast.success("Link copiado para a área de transferência!")
+                                    navigator.clipboard.writeText(sharedUrl);
+                                }} />
+                        </Card>
+                            
+                        )}
+                    </div>
+                
+                </div>
+                
+                
             </div>
             
-        </div>
-
+        </>
         
     )
 }
