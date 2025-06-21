@@ -11,6 +11,9 @@ import axios, { AxiosProgressEvent } from "axios";
 import { Copy, PlusCircle, Trash2Icon } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export default function Upload() {
     // Estados para controlar o upload
@@ -30,7 +33,7 @@ export default function Upload() {
         
         // Exemplo de chamada de API para salvar o vídeo
         try {
-            const res = await axios.post('https://fastupload.up.railway.app/videos', {
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/videos`, {
                 title: title,
                 url: url
             });
@@ -59,7 +62,7 @@ export default function Upload() {
         formData.append('file', videoFile)
 
         try {
-            const res = await axios.post('https://fastupload.up.railway.app/upload', formData, {
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: (event: AxiosProgressEvent) => {
                     const total = event.total || 1

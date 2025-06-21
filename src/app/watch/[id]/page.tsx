@@ -7,6 +7,9 @@ import { Separator } from "@/components/ui/separator";
 const Plyr = dynamic(() => import("plyr-react"), { ssr: false });
 import "plyr-react/plyr.css";
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 
 interface PageProps {
@@ -39,7 +42,7 @@ export default function WatchVideo({ params }: PageProps) {
     useEffect(() => {
         const fetchVideoData = async () => {
         try {
-            const response = await axios.get(`https://fastupload.up.railway.app/videos/${id}`);
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/videos/${id}`);
             setVideoData(response.data.video); // ← Pega o objeto dentro de "video"
             console.log("Video data fetched:", response.data.video);
         } catch (error) {
