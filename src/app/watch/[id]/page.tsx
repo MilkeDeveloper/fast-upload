@@ -8,12 +8,13 @@ const Plyr = dynamic(() => import("plyr-react"), { ssr: false });
 import "plyr-react/plyr.css";
 import axios from "axios";
 import dotenv from "dotenv";
+import { use } from "react";
 
 dotenv.config();
 
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>;
 }
 
 interface VideoData {
@@ -30,7 +31,7 @@ import React, { useEffect, useState } from "react";
 
 export default function WatchVideo({ params }: PageProps) {
     // Extract the video ID from the URL parameters
-    const { id } = params;
+    const { id } = use(params);
 
     const [videoData, setVideoData] = useState<VideoData | null>(null);
 
