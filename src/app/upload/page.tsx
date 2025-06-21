@@ -41,7 +41,7 @@ export default function Upload() {
 
                 const videoID = res.data.video.id // Supondo que o ID do vídeo seja retornado na resposta
                 console.log("Vídeo salvo com sucesso:", res.data.video.id);
-                setCustomizedUrl(`${process.env.NEXT_PUBLIC_API_URL}/watch/${videoID}`) // URL para ser compartilhada
+                setCustomizedUrl(`${process.env.FAST_UPLOAD_URL}/watch/${videoID}`) // URL para ser compartilhada
                 toast.success("Vídeo salvo com sucesso!");
                 return res.data; // Retorna o vídeo salvo
             }       
