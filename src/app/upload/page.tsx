@@ -21,7 +21,34 @@ export default function Upload() {
     const [uploading, setUploading] = useState(false);
     const [openmodal, setOpenmodal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
+    const [customizedUrl, setCustomizedUrl] = useState("");
     const inputRef = useRef(null);
+
+    
+    async function saveVideoFile(title: string, url: string) {
+        // Aqui você pode implementar a lógica para salvar o vídeo no banco de dados ou onde for necessário
+        
+        // Exemplo de chamada de API para salvar o vídeo
+        try {
+            const res = await axios.post('https://fastupload.up.railway.app/videos', {
+                title: title,
+                url: url
+            });
+            if (res.data.success) {
+
+                const videoID = res.data.video.id // Supondo que o ID do vídeo seja retornado na resposta
+                console.log("Vídeo salvo com sucesso:", res.data.video.id);
+                setCustomizedUrl(`http://localhost:3000/watch/${videoID}`) // URL para ser compartilhada
+                toast.success("Vídeo salvo com sucesso!");
+                return res.data; // Retorna o vídeo salvo
+            }       
+        } catch (error) {
+            console.error("Erro ao salvar o vídeo:", error);
+            setModalMessage("Erro ao salvar o vídeo. Tente novamente mais tarde.");
+            setOpenmodal(true);
+            return null; // Retorna null em caso de erro
+        }
+    }
     
 
 
@@ -32,7 +59,7 @@ export default function Upload() {
         formData.append('file', videoFile)
 
         try {
-            const res = await axios.post('http://localhost:3333/upload', formData, {
+            const res = await axios.post('https://fastupload.up.railway.app/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: (event: AxiosProgressEvent) => {
                     const total = event.total || 1
@@ -48,11 +75,13 @@ export default function Upload() {
             if (res.data.success) {
                 const sharedUrl = res.data.url
                 const rawUrl = sharedUrl.split('dl=0')[0] + 'raw=1'
-                setSharedUrl(rawUrl) // URL para ser compartilhada
-                console.log(sharedUrl)
+                saveVideoFile(videoFile.name, rawUrl) // Salva o vídeo no banco de dados
+                console.log("url de compartilhamento: ", customizedUrl)
+                console.log(res.data, videoFile.name)
                 setUploadProgress(0) // Reseta progresso após o upload
                 setUploading(false); // Define que o upload foi concluído
                 setVideoFile(null) // Limpa o arquivo de vídeo após o upload
+                
             } else {
                 alert('Falha no upload')
             }
@@ -68,6 +97,8 @@ export default function Upload() {
         }
     }
 
+    
+        
     
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -133,7 +164,7 @@ export default function Upload() {
         setUploading(false);
     };
 
-    return (
+    return ( 
         <>
             <div className="">
                 <div className="max-h-screen flex justify-center gap-2">
@@ -295,13 +326,13 @@ export default function Upload() {
                     </div>)}
 
                     <div className="flex justify-center pt-8 text-xl text-white font-bold h">
-                    {sharedUrl && !videoFile && ( <span>Link gerado: </span> )}        
+                    {customizedUrl && !videoFile && ( <span>Link gerado: </span> )}        
                     </div>
 
                     <div className="flex justify-center items-center pt-2 px-6">
-                        {sharedUrl && !videoFile && ( <Card className="flex justify-center w-[720px] xs:w-1/3 max-w-[720px] h-[42px] relative bg-zinc-800 border border-green-600  transition-colors duration-200">
+                        {customizedUrl && !videoFile && ( <Card className="flex justify-center w-[720px] xs:w-1/3 max-w-[720px] h-[42px] relative bg-zinc-800 border border-green-600  transition-colors duration-200">
                             <input 
-                            value={sharedUrl} 
+                            value={customizedUrl} 
                             readOnly
                             onFocus={e => e.target.select()}
                             placeholder="Link de compartilhamentro gerado." 
@@ -310,7 +341,7 @@ export default function Upload() {
                             </input>
                             <Copy className="absolute right-2 cursor-pointer text-green-700 hover:text-green-400"
                                 onClick={() =>  { toast.success("Link copiado para a área de transferência!")
-                                    navigator.clipboard.writeText(sharedUrl);
+                                    navigator.clipboard.writeText(customizedUrl);
                                 }} />
                         </Card>
                             
@@ -325,4 +356,5 @@ export default function Upload() {
         </>
         
     )
+    
 }

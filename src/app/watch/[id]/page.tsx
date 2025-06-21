@@ -6,12 +6,59 @@ import { Separator } from "@/components/ui/separator";
 // This is a dynamic import for the Plyr component to ensure it only loads on the client side
 const Plyr = dynamic(() => import("plyr-react"), { ssr: false });
 import "plyr-react/plyr.css";
+import axios from "axios";
+
 
 interface PageProps {
   params: { id: string }
 }
 
-export default function WatchVideo({params}: PageProps) {
+interface VideoData {
+    id: string;
+    title: string;
+    url: string;
+    createdAt: string;
+    // Add other properties as needed based on your API response
+}
+
+
+
+import React, { useEffect, useState } from "react";
+
+export default function WatchVideo({ params }: PageProps) {
+    // Extract the video ID from the URL parameters
+    const { id } = params;
+
+    const [videoData, setVideoData] = useState<VideoData | null>(null);
+
+
+    const [isVertical, setIsVertical] = useState(false);
+
+  
+
+    useEffect(() => {
+        const fetchVideoData = async () => {
+        try {
+            const response = await axios.get(`https://fastupload.up.railway.app/videos/${id}`);
+            setVideoData(response.data.video); // ← Pega o objeto dentro de "video"
+            console.log("Video data fetched:", response.data.video);
+        } catch (error) {
+            console.error("Erro ao buscar vídeo:", error);
+        }
+        };
+
+        fetchVideoData();
+    }, [id]);
+
+    useEffect(() => {
+    const temp = document.createElement("video");
+    temp.src = videoData ? videoData.url : "";
+    temp.onloadedmetadata = () => {
+      const ratio = temp.videoWidth / temp.videoHeight;
+      setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
+    };
+  }, [videoData?.url]);
+
     return (
         <div className="min-h-[90vh] flex flex-col items-center min-w-screen px-6">
             
@@ -22,22 +69,25 @@ export default function WatchVideo({params}: PageProps) {
             </div>
             <div className="w-full text-center min-w-screen px-12">
                 <Separator className=" mt-2 mb-4 bg-green-800" />
-                <h1 className="mt-8 text-sm md:text-lg lg:text-xl 2xl:text-2xl text-zinc-200 font-bold">Thornhill - Joy.mp4</h1>
-
+                <h1 className="mt-8 text-sm md:text-lg lg:text-xl 2xl:text-2xl text-zinc-200 font-bold">
+                    {videoData && videoData.title ? videoData.title : "Loading..."}
+                </h1>
             </div>
             
-            <div className="min-w-[90vw] 2xl:min-w-[60vw] mt-4 border-2 border-green-500 rounded-3xl overflow-hidden">
+            <div className={`min-w-[90vw] ${isVertical ? "md:min-w-[20vw] 2xl:min-h-[680px]" : "2xl:min-w-[60vw]"}  mt-4 border-2 border-green-500 rounded-3xl overflow-hidden`}>
                 <Plyr
                     source={{
                         type: "video",
                         sources: [
                             {
-                                src: "https://www.dropbox.com/scl/fi/dbj8ibv49d8umby052j28/2f7d1ca0-da26-4f16-a86c-be3100c740fa_Joy1.mp4?rlkey=1smx7s3l0rmug7mworrg6zix1&raw=1",
+                                src: `${videoData ? videoData?.url : ""}`,
                                 provider: "html5",
                             },
                         ],
                     }}
                     options={{
+                        ratio: isVertical ? "9:16" : "16:9", // Default aspect ratio
+                        clickToPlay: true,
                         controls: [
                             "play-large",
                             "play",
@@ -49,16 +99,14 @@ export default function WatchVideo({params}: PageProps) {
                             "settings",
                             "pip",
                             "fullscreen",
+                            
                         ],
                     }}
-                />
 
-                
+                    
+                />
             </div>
-            
         </div>
-            
     );
-    
 }
 
