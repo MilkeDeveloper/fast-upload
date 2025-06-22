@@ -114,8 +114,9 @@ export default function WatchVideo({ params }: PageProps) {
             <div className="flex">
                 <a href={videoData?.url} download={videoData?.url}>
                     <DownloadIcon className="w-8 h-8 text-green-500" />
-                    <EyeIcon className="w-8 h-8 text-green-500" />
+                    
                 </a>
+                <EyeIcon className="w-8 h-8 text-green-500" />
             </div>
         </div>
     );
