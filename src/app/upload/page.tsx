@@ -25,6 +25,7 @@ export default function Upload() {
     const [openmodal, setOpenmodal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
     const [customizedUrl, setCustomizedUrl] = useState("");
+    const [isVertical, setIsVertical] = useState(false);
     const inputRef = useRef(null);
 
     
@@ -52,7 +53,12 @@ export default function Upload() {
             return null; // Retorna null em caso de erro
         }
     }
-    
+
+    const temp = document.createElement("video");
+    temp.onloadedmetadata = () => {
+        const ratio = temp.videoWidth / temp.videoHeight;
+        setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
+    }
 
 
     const handleUpload = async () => {
@@ -208,18 +214,16 @@ export default function Upload() {
                             
                             )}
                             
-                            <div className="min-w-[50vw] 2xl:min-w-[60vw] h-[400px] rounded-md border border-green-600 mb-4 overflow-hidden">
                             
-                                {videoFile && !uploadProgress && (
-                                    <video
-                                    key={videoFile.name}
-                                    src={URL.createObjectURL(videoFile)}
-                                    controls
-                                    className="min-w-[40vw] h-[200px] rounded-md border border-green-600 mb-4 object-contain"
-                                    />
-                                )}
 
-                            </div>
+                            {videoFile && !uploadProgress && (
+                                <video
+                                key={videoFile.name}
+                                src={URL.createObjectURL(videoFile)}
+                                controls
+                                className={` ${isVertical ? "min-w-[30vw] 2xl:min-w-[20vw] min-h-[200px]" : "min-w-[20vw] 2xl:min-w-[6vw] min-h-[100px] "} 2xl:h-[250px] rounded-md border border-green-600 mb-4 object-contain`}
+                                />
+                            )}
 
                             <div className=" flex flex-col justify-center items-center w-full">
                                 {uploadProgress > 0 && uploadProgress < 100 && (
@@ -245,7 +249,7 @@ export default function Upload() {
                                 )}
 
                                 {videoFile && uploadProgress === 0 && (
-                                    <span className="text-sm font-bold mt-4 text-gray-400">
+                                    <span className="text-sm text-center font-bold mt-4 text-gray-400">
                                         {videoFile.name} - {Math.round(videoFile.size / 1024)} KB
                                     </span>
                                 )}
