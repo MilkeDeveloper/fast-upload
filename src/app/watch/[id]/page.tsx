@@ -111,7 +111,7 @@ export default function WatchVideo({ params }: PageProps) {
                     
                 />
             </div>
-            <div className={`flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
+            <div className={`mt-4 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
                 <EyeIcon className="w-8 h-8 text-green-500" />
                 <HeartIcon className="w-8 h-8 text-green-500" />
                 <Share2Icon className="w-8 h-8 text-green-500" />
