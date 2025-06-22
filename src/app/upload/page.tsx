@@ -208,7 +208,7 @@ export default function Upload() {
                             
                             )}
                             
-                            <div className="w-full h-[400px] rounded-md border border-green-600 mb-4 overflow-hidden">
+                            <div className="min-w-[50vw] 2xl:min-w-[60vw] h-[400px] rounded-md border border-green-600 mb-4 overflow-hidden">
                             
                                 {videoFile && !uploadProgress && (
                                     <video
