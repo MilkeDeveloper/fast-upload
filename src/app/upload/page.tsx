@@ -206,17 +206,20 @@ export default function Upload() {
                                 ou clique para selecionar.
                             </span>
                             
-                        )}
-                            
-                            
-                            {videoFile && !uploadProgress && (
-                                <video
-                                key={videoFile.name}
-                                src={URL.createObjectURL(videoFile)}
-                                controls
-                                className="w-full rounded-md border border-green-600 mb-4 object-contain"
-                                />
                             )}
+                            
+                            <div className="w-full h-[400px] rounded-md border border-green-600 mb-4 overflow-hidden">
+                            
+                                {videoFile && !uploadProgress && (
+                                    <video
+                                    key={videoFile.name}
+                                    src={URL.createObjectURL(videoFile)}
+                                    controls
+                                    className="w-full rounded-md border border-green-600 mb-4 object-contain"
+                                    />
+                                )}
+
+                            </div>
 
                             <div className=" flex flex-col justify-center items-center w-full">
                                 {uploadProgress > 0 && uploadProgress < 100 && (
