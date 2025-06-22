@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import axios, { AxiosProgressEvent } from "axios";
 import { Copy, PlusCircle, Trash2Icon } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import dotenv from "dotenv";
 
@@ -54,11 +54,19 @@ export default function Upload() {
         }
     }
 
-    const temp = document.createElement("video");
-    temp.onloadedmetadata = () => {
-        const ratio = temp.videoWidth / temp.videoHeight;
-        setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
-    }
+    useEffect(() => {
+        if (!videoFile) return;
+
+        const temp = document.createElement("video");
+        const url = URL.createObjectURL(videoFile);
+        temp.src = url;
+
+        temp.onloadedmetadata = () => {
+            const ratio = temp.videoWidth / temp.videoHeight;
+            setIsVertical(ratio < 0.8);
+            URL.revokeObjectURL(url); // Libera memória
+        };
+    }, [videoFile]);
 
 
     const handleUpload = async () => {
@@ -221,7 +229,7 @@ export default function Upload() {
                                 key={videoFile.name}
                                 src={URL.createObjectURL(videoFile)}
                                 controls
-                                className={` ${isVertical ? "min-w-[30vw] 2xl:min-w-[20vw] min-h-[200px]" : "min-w-[20vw] 2xl:min-w-[6vw] min-h-[100px] "} 2xl:h-[250px] rounded-md border border-green-600 mb-4 object-contain`}
+                                className={` ${isVertical ? "min-w-[30vw] 2xl:min-w-[6vw] min-h-[200px]" : "min-w-[20vw] 2xl:min-w-[20vw] min-h-[100px] "} 2xl:h-[250px] rounded-md border border-green-600 mb-4 object-contain`}
                                 />
                             )}
 
