@@ -28,7 +28,7 @@ interface VideoData {
 
 
 import React, { useEffect, useState } from "react";
-import { DownloadIcon, EyeIcon } from "lucide-react";
+import { DownloadIcon, EyeIcon, HeartIcon, Share2Icon } from "lucide-react";
 
 export default function WatchVideo({ params }: PageProps) {
     // Extract the video ID from the URL parameters
@@ -111,8 +111,10 @@ export default function WatchVideo({ params }: PageProps) {
                     
                 />
             </div>
-            <div className={`flex justify-between min-w-full ${isVertical ? "2xl:min-w-[16vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
+            <div className={`flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
                 <EyeIcon className="w-8 h-8 text-green-500" />
+                <HeartIcon className="w-8 h-8 text-green-500" />
+                <Share2Icon className="w-8 h-8 text-green-500" />
                 <a href={videoData?.url} download={videoData?.url}>
                     <DownloadIcon className="w-8 h-8 text-green-500" />
                     
