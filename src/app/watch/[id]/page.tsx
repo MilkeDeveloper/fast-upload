@@ -28,6 +28,7 @@ interface VideoData {
 
 
 import React, { useEffect, useState } from "react";
+import { DownloadIcon } from "lucide-react";
 
 export default function WatchVideo({ params }: PageProps) {
     // Extract the video ID from the URL parameters
@@ -110,6 +111,9 @@ export default function WatchVideo({ params }: PageProps) {
                     
                 />
             </div>
+            <a href={videoData?.url} download={videoData?.url}>
+                <DownloadIcon className="w-8 h-8 text-green-500" />
+            </a>
         </div>
     );
 }
