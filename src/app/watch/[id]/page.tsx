@@ -78,7 +78,7 @@ export default function WatchVideo({ params }: PageProps) {
                 </h1>
             </div>
             
-            <div className={`min-w-[75vw] ${isVertical ? "md:min-w-[20vw] 2xl:min-h-[680px]" : "2xl:min-w-[60vw]"}  mt-4 border-2 border-green-500 rounded-3xl overflow-hidden`}>
+            <div className={`min-w-[80vw] ${isVertical ? "md:min-w-[20vw] 2xl:min-h-[680px]" : "2xl:min-w-[60vw]"}  mt-4 border-2 border-green-500 rounded-3xl overflow-hidden`}>
                 <Plyr
                     source={{
                         type: "video",
