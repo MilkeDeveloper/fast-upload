@@ -11,7 +11,9 @@ import axios, { AxiosProgressEvent } from "axios";
 import { Copy, PlusCircle, Trash2Icon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { FaWhatsapp } from "react-icons/fa";
 import dotenv from "dotenv";
+
 
 dotenv.config();
 
@@ -181,6 +183,8 @@ export default function Upload() {
         setUploading(false);
     };
 
+    const shareLink = encodeURIComponent(`Confira este vídeo: ${customizedUrl}`);
+
     return ( 
         <>
             <div className="">
@@ -347,8 +351,8 @@ export default function Upload() {
                     {customizedUrl && !videoFile && ( <span>Link gerado: </span> )}        
                     </div>
 
-                    <div className="flex justify-center items-center pt-2 px-6">
-                        {customizedUrl && !videoFile && ( <Card className="flex justify-center w-[720px] xs:w-1/3 max-w-[720px] h-[42px] relative bg-zinc-800 border border-green-600  transition-colors duration-200">
+                    <div className="flex flex-col justify-center items-center pt-2 px-6">
+                        {customizedUrl && !videoFile && ( <Card className="flex justify-center w-full max-w-[720px] h-[42px] relative bg-zinc-800 border border-green-600  transition-colors duration-200">
                             <input 
                             value={customizedUrl} 
                             readOnly
@@ -361,9 +365,26 @@ export default function Upload() {
                                 onClick={() =>  { toast.success("Link copiado para a área de transferência!")
                                     navigator.clipboard.writeText(customizedUrl);
                                 }} />
+                            
+                            
+
                         </Card>
                             
                         )}
+
+                        {customizedUrl && !videoFile && ( <div className="text-zinc-300 mt-5 flex">
+                                <span className="mt-1">Compartilhar via WhatsApp</span>
+                                    
+                                <a     
+                                    href={`https://wa.me/?text=${shareLink}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className=""
+                                    >
+                                    <FaWhatsapp className="w-8 h-8 ml-4" />
+                                </a>
+                               
+                        </div> )}
                     </div>
                 
                 </div>
