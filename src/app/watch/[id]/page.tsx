@@ -61,7 +61,7 @@ export default function WatchVideo({ params }: PageProps) {
       const ratio = temp.videoWidth / temp.videoHeight;
       setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
     };
-  }, [videoData?.url]);
+  }, [videoData]);
 
     return (
         <div className="min-h-[90vh] flex flex-col items-center min-w-screen px-6">
