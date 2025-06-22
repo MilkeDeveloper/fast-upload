@@ -111,7 +111,7 @@ export default function WatchVideo({ params }: PageProps) {
                     
                 />
             </div>
-            <div className="flex justify-between w-full px-8">
+            <div className="flex justify-between min-w-full 2xl:min-w-[60vw] px-8">
                 <EyeIcon className="w-8 h-8 text-green-500" />
                 <a href={videoData?.url} download={videoData?.url}>
                     <DownloadIcon className="w-8 h-8 text-green-500" />
