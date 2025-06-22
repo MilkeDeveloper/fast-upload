@@ -215,7 +215,7 @@ export default function Upload() {
                                     key={videoFile.name}
                                     src={URL.createObjectURL(videoFile)}
                                     controls
-                                    className="w-full rounded-md border border-green-600 mb-4 object-contain"
+                                    className="min-w-[40vw] h-[200px] rounded-md border border-green-600 mb-4 object-contain"
                                     />
                                 )}
 
