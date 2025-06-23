@@ -47,6 +47,7 @@ export default function WatchVideo({ params }: PageProps) {
         try {
             const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/videos/${id}`);
             setVideoData(response.data.video); // ← Pega o objeto dentro de "video"
+            setVideoViews(response.data.views)
             console.log("Video data fetched:", response.data.video);
         } catch (error) {
             console.error("Erro ao buscar vídeo:", error);
@@ -68,9 +69,7 @@ export default function WatchVideo({ params }: PageProps) {
 
     useEffect(() => {
 
-        const socket = io(process.env.NEXT_PUBLIC_API_URL!);
-
-        
+        const socket = io(process.env.NEXT_PUBLIC_API_URL!);  
         console.log(socket)
 
         interface ViewUpdatedData {
