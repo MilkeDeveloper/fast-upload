@@ -86,7 +86,8 @@ export default function WatchVideo({ params }: PageProps) {
 
         
         return () => {
-            socket?.disconnect();
+            socket.off('viewUpdated', )
+
         }
 
     }, [id])
