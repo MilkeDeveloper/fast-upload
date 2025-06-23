@@ -113,11 +113,15 @@ export default function WatchVideo({ params }: PageProps) {
                 />
             </div>
             <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
-                <EyeIcon className="w-8 h-8 text-green-500" />
-                <span>{videoData?.views}</span>
-                <Share2Icon className="w-8 h-8 text-green-500" />
+                <div className="flex gap-x-2">
+                    <EyeIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
+                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoData?.views}</span>
+                    
+                </div>
+                
+                <Share2Icon className="w-5 h-5 2xl:w-7 2xl:h-7 mr-6 text-green-700" />
                 <a href={videoData?.url} download={videoData?.url}>
-                    <DownloadIcon className="w-8 h-8 text-green-500" />
+                    <DownloadIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
                     
                 </a>
             </div>
