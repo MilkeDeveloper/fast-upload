@@ -71,24 +71,30 @@ export default function WatchVideo({ params }: PageProps) {
         const socket = getSocket();
         console.log(socket)
 
-        socket.on('connect', () => {
-            console.log("socket conectado com ID: ", id )
-
-            socket.emit('videoViewed', {id: id})
-            console.log("id do video emitido: ", id)
-
-            socket.on('viewUpdated', (data) => {
-                if (data.id === id) {
-                    setVideoViews(data.views);
-                }
-            });
-        })
-
-        
-        return () => {
-            socket.off('viewUpdated', )
-
+        interface ViewUpdatedData {
+            id: string;
+            views: number;
         }
+
+        function handleViewUpdated(data: ViewUpdatedData) {
+            if (data.id === id) {
+            setVideoViews(data.views);
+            }
+        }
+
+        socket.on('connect', () => {
+            console.log('socket conectado com ID:', socket.id);
+
+            socket.emit('videoViewed', { id });
+            console.log('id do video emitido:', id);
+        });
+
+        socket.on('viewUpdated', handleViewUpdated);
+
+        return () => {
+            socket.off('viewUpdated', handleViewUpdated);
+            socket.disconnect();
+        };
 
     }, [id])
 
