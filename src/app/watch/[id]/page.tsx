@@ -21,6 +21,7 @@ interface VideoData {
     id: string;
     title: string;
     url: string;
+    views: number;
     createdAt: string;
     // Add other properties as needed based on your API response
 }
@@ -28,7 +29,7 @@ interface VideoData {
 
 
 import React, { useEffect, useState } from "react";
-import { DownloadIcon, EyeIcon, HeartIcon, Share2Icon } from "lucide-react";
+import { DownloadIcon, EyeIcon, Share2Icon } from "lucide-react";
 
 export default function WatchVideo({ params }: PageProps) {
     // Extract the video ID from the URL parameters
@@ -113,7 +114,7 @@ export default function WatchVideo({ params }: PageProps) {
             </div>
             <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
                 <EyeIcon className="w-8 h-8 text-green-500" />
-                <HeartIcon className="w-8 h-8 text-green-500" />
+                <span>{videoData?.views}</span>
                 <Share2Icon className="w-8 h-8 text-green-500" />
                 <a href={videoData?.url} download={videoData?.url}>
                     <DownloadIcon className="w-8 h-8 text-green-500" />
