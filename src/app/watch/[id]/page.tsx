@@ -37,7 +37,7 @@ export default function WatchVideo({ params }: PageProps) {
     const { id } = use(params);
 
     const [videoData, setVideoData] = useState<VideoData | null>(null);
-    //const [videoViews, setVideoViews] = useState(0)
+    const [videoViews, setVideoViews] = useState(0)
     const [isVertical, setIsVertical] = useState(false);
 
   
@@ -55,8 +55,22 @@ export default function WatchVideo({ params }: PageProps) {
         };
 
         fetchVideoData();
+    }, [id]);
 
-        const interval = setInterval(fetchVideoData, 5000); // atualiza a cada 5 segundos
+
+    useEffect(() => {
+        const fetchVideoDataViews = async () => {
+        try {
+            setVideoViews(videoData ? videoData?.views : 0)
+            console.log("");
+        } catch (error) {
+            console.error("Erro ao buscar vídeo:", error);
+        }
+        };
+
+        fetchVideoDataViews();
+
+        const interval = setInterval(fetchVideoDataViews, 5000); // atualiza a cada 5 segundos
 
         return () => clearInterval(interval); // limpa no unmount
     }, [id]);
@@ -156,7 +170,7 @@ export default function WatchVideo({ params }: PageProps) {
             <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
                 <div className="flex gap-x-2">
                     <EyeIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
-                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoData?.views}</span>
+                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoViews}</span>
                     
                 </div>
                 
