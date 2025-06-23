@@ -9,7 +9,7 @@ import "plyr-react/plyr.css";
 import axios from "axios";
 import dotenv from "dotenv";
 import { use } from "react";
-import { getSocket } from "@/utils/socket";
+import { io } from "socket.io-client";
 
 dotenv.config();
 
@@ -68,7 +68,7 @@ export default function WatchVideo({ params }: PageProps) {
 
     useEffect(() => {
 
-        const socket = getSocket();
+        const socket = io(process.env.NEXT_PUBLIC_API_URL!);
         console.log(socket)
 
         interface ViewUpdatedData {
@@ -161,4 +161,5 @@ export default function WatchVideo({ params }: PageProps) {
         </div>
     );
 }
+
 
