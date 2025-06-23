@@ -37,7 +37,7 @@ export default function WatchVideo({ params }: PageProps) {
     const { id } = use(params);
 
     const [videoData, setVideoData] = useState<VideoData | null>(null);
-    const [videoViews, setVideoViews] = useState(0)
+    //const [videoViews, setVideoViews] = useState(0)
     const [isVertical, setIsVertical] = useState(false);
 
   
@@ -47,7 +47,7 @@ export default function WatchVideo({ params }: PageProps) {
         try {
             const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/videos/${id}`);
             setVideoData(response.data.video); // ← Pega o objeto dentro de "video"
-            setVideoViews(response.data.views)
+            //setVideoViews(response.data.views)
             console.log("Video data fetched:", response.data.video);
         } catch (error) {
             console.error("Erro ao buscar vídeo:", error);
@@ -55,6 +55,10 @@ export default function WatchVideo({ params }: PageProps) {
         };
 
         fetchVideoData();
+
+        const interval = setInterval(fetchVideoData, 5000); // atualiza a cada 5 segundos
+
+        return () => clearInterval(interval); // limpa no unmount
     }, [id]);
 
     useEffect(() => {
@@ -65,6 +69,9 @@ export default function WatchVideo({ params }: PageProps) {
         setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
         };
     }, [videoData]);
+
+
+    
 
 
     useEffect(() => {
@@ -79,7 +86,7 @@ export default function WatchVideo({ params }: PageProps) {
 
         function handleViewUpdated(data: ViewUpdatedData) {
             if (data.id === id) {
-            setVideoViews(data.views);
+            //setVideoViews(data.views);
             }
         }
 
@@ -149,7 +156,7 @@ export default function WatchVideo({ params }: PageProps) {
             <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
                 <div className="flex gap-x-2">
                     <EyeIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
-                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoViews}</span>
+                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoData?.views}</span>
                     
                 </div>
                 
