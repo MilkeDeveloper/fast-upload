@@ -9,7 +9,7 @@ import "plyr-react/plyr.css";
 import axios from "axios";
 import dotenv from "dotenv";
 import { use } from "react";
-import socket from "../../../utils/socket.js"
+import { getSocket } from "@/utils/socket";
 
 dotenv.config();
 
@@ -67,13 +67,24 @@ export default function WatchVideo({ params }: PageProps) {
 
 
     useEffect(() => {
-        socket.emit('videoViewed', {id: id})
 
-        socket.on('viewUpdated', (data) => {
-            if (data.id === id) {
-                setVideoViews(data.views);
-            }
-        });
+        const socket = getSocket();
+        console.log(socket)
+
+        socket.on('connect', () => {
+            console.log("socket conectado com ID: ", id )
+
+            socket.emit('videoViewed', {id: id})
+            console.log("id do video emitido: ", id)
+
+            socket.on('viewUpdated', (data) => {
+                if (data.id === id) {
+                    setVideoViews(data.views);
+                }
+            });
+        })
+
+        
         return () => {
             socket?.disconnect();
         }
