@@ -9,6 +9,7 @@ import "plyr-react/plyr.css";
 import axios from "axios";
 import dotenv from "dotenv";
 import { use } from "react";
+import socket from "../../../utils/socket.js"
 
 dotenv.config();
 
@@ -36,8 +37,7 @@ export default function WatchVideo({ params }: PageProps) {
     const { id } = use(params);
 
     const [videoData, setVideoData] = useState<VideoData | null>(null);
-
-
+    const [videoViews, setVideoViews] = useState(0)
     const [isVertical, setIsVertical] = useState(false);
 
   
@@ -57,13 +57,28 @@ export default function WatchVideo({ params }: PageProps) {
     }, [id]);
 
     useEffect(() => {
-    const temp = document.createElement("video");
-    temp.src = videoData ? videoData.url : "";
-    temp.onloadedmetadata = () => {
-      const ratio = temp.videoWidth / temp.videoHeight;
-      setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
-    };
-  }, [videoData]);
+        const temp = document.createElement("video");
+        temp.src = videoData ? videoData.url : "";
+        temp.onloadedmetadata = () => {
+        const ratio = temp.videoWidth / temp.videoHeight;
+        setIsVertical(ratio < 0.8); // Se for muito alto, é vertical
+        };
+    }, [videoData]);
+
+
+    useEffect(() => {
+        socket.emit('videoViewed', {id: id})
+
+        socket.on('viewUpdated', (data) => {
+            if (data.id === id) {
+                setVideoViews(data.views);
+            }
+        });
+        return () => {
+            socket?.disconnect();
+        }
+
+    }, [id])
 
     return (
         <div className="min-h-[90vh] flex flex-col items-center min-w-screen px-6">
@@ -115,7 +130,7 @@ export default function WatchVideo({ params }: PageProps) {
             <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
                 <div className="flex gap-x-2">
                     <EyeIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
-                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoData?.views}</span>
+                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoViews}</span>
                     
                 </div>
                 
