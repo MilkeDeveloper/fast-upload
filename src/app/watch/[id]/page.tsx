@@ -9,7 +9,10 @@ import "plyr-react/plyr.css";
 import axios from "axios";
 import dotenv from "dotenv";
 import { use } from "react";
-import { io } from "socket.io-client";
+import React, { useEffect, useState, useMemo } from "react";
+import { DownloadIcon, EyeIcon, Share2Icon } from "lucide-react";
+import { getSocket } from "@/utils/socket";
+//import { io } from "socket.io-client";
 
 dotenv.config();
 
@@ -29,8 +32,6 @@ interface VideoData {
 
 
 
-import React, { useEffect, useState } from "react";
-import { DownloadIcon, EyeIcon, Share2Icon } from "lucide-react";
 
 export default function WatchVideo({ params }: PageProps) {
     // Extract the video ID from the URL parameters
@@ -58,22 +59,7 @@ export default function WatchVideo({ params }: PageProps) {
     }, [id]);
 
 
-    useEffect(() => {
-        const fetchVideoDataViews = async () => {
-        try {
-            setVideoViews(videoData ? videoData?.views : 0)
-            console.log("");
-        } catch (error) {
-            console.error("Erro ao buscar vídeo:", error);
-        }
-        };
-
-        fetchVideoDataViews();
-
-        const interval = setInterval(fetchVideoDataViews, 5000); // atualiza a cada 5 segundos
-
-        return () => clearInterval(interval); // limpa no unmount
-    }, [id]);
+    
 
     useEffect(() => {
         const temp = document.createElement("video");
@@ -90,7 +76,7 @@ export default function WatchVideo({ params }: PageProps) {
 
     useEffect(() => {
 
-        const socket = io(process.env.NEXT_PUBLIC_API_URL!);  
+        const socket = getSocket()
         console.log(socket)
 
         interface ViewUpdatedData {
@@ -100,7 +86,7 @@ export default function WatchVideo({ params }: PageProps) {
 
         function handleViewUpdated(data: ViewUpdatedData) {
             if (data.id === id) {
-            //setVideoViews(data.views);
+                setVideoViews(data.views);
             }
         }
 
@@ -111,75 +97,88 @@ export default function WatchVideo({ params }: PageProps) {
             console.log('id do video emitido:', id);
         });
 
-        socket.on('viewUpdated', handleViewUpdated);
+        socket.on('viewCountUpdate', handleViewUpdated)
 
         return () => {
-            socket.off('viewUpdated', handleViewUpdated);
+            socket.off('viewCountUpdate', handleViewUpdated);
             socket.disconnect();
         };
 
     }, [id])
 
+    // prevents player re-render
+    const memoizedPlayer = useMemo(() => {
+        return (
+            <Plyr
+            source={{
+                type: "video",
+                sources: [
+                {
+                    src: videoData?.url || "",
+                    provider: "html5",
+                },
+                ],
+            }}
+            options={{
+                ratio: isVertical ? "9:16" : "16:9",
+                clickToPlay: true,
+                controls: [
+                "play-large",
+                "play",
+                "progress",
+                "current-time",
+                "mute",
+                "volume",
+                "captions",
+                "settings",
+                "pip",
+                "fullscreen",
+                ],
+            }}
+            />
+        );
+        }, [videoData?.url, isVertical]);
+
+
     return (
         <div className="min-h-[90vh] flex flex-col items-center min-w-screen px-6">
-            
             <div className="max-h-screen flex gap-2">
                 <h1 className="pt-4 text-2xl text-green-500 font-bold">Fast</h1>
                 <h1 className="pt-4 text-2xl text-zinc-200 font-bold">Upload</h1>
 
             </div>
-            <div className="w-full text-center min-w-screen px-12">
-                <Separator className=" mt-2 mb-4 bg-green-800" />
-                <h1 className="mt-8 text-sm md:text-lg lg:text-xl 2xl:text-2xl text-zinc-200 font-bold">
-                    {videoData && videoData.title ? videoData.title : "Loading..."}
-                </h1>
-            </div>
-            
-            <div className={`min-w-[80vw] ${isVertical ? "md:min-w-[20vw] 2xl:min-h-[680px]" : "2xl:min-w-[60vw]"}  mt-4 border-2 border-green-500 rounded-3xl overflow-hidden`}>
-                <Plyr
-                    source={{
-                        type: "video",
-                        sources: [
-                            {
-                                src: `${videoData ? videoData?.url : ""}`,
-                                provider: "html5",
-                            },
-                        ],
-                    }}
-                    options={{
-                        ratio: isVertical ? "9:16" : "16:9", // Default aspect ratio
-                        clickToPlay: true,
-                        controls: [
-                            "play-large",
-                            "play",
-                            "progress",
-                            "current-time",
-                            "mute",
-                            "volume",
-                            "captions",
-                            "settings",
-                            "pip",
-                            "fullscreen",
-                            
-                        ],
-                    }}
-
-                    
-                />
-            </div>
-            <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
-                <div className="flex gap-x-2">
-                    <EyeIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
-                    <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoViews}</span>
-                    
+            {videoData && videoData.url && isVertical !== null ? ( <div className="flex flex-col items-center w-full text-zinc-300">
+                <div className="w-full text-center min-w-screen px-12">
+                    <Separator className=" mt-2 mb-4 bg-green-800" />
+                    <h1 className="mt-8 text-sm md:text-lg lg:text-xl 2xl:text-2xl text-zinc-200 font-bold">
+                        {videoData && videoData.title ? videoData.title : "Loading..."}
+                    </h1>
                 </div>
                 
-                <Share2Icon className="w-5 h-5 2xl:w-7 2xl:h-7 mr-6 text-green-700" />
-                <a href={videoData?.url} download={videoData?.url}>
-                    <DownloadIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
+                { videoData && isVertical !== null && (<div className={`min-w-[80vw]  ${isVertical ? "md:min-w-[20vw] 2xl:min-h-[680px]" : "2xl:min-w-[60vw]"}  mt-4 border-2 border-green-500 rounded-3xl overflow-hidden`}>
+                    {memoizedPlayer}
+                </div>)}
+
+                <div className={`my-3 flex justify-between min-w-full ${isVertical ? "2xl:min-w-[20vw] px-8" : "2xl:min-w-[60vw] px-8"}`}>
+                    <div className="flex gap-x-2">
+                        <EyeIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
+                        <span className="2xl:mt-[1px] -mt-[1px] text-zinc-400 font-bold">{videoViews}</span>
+                        
+                    </div>
                     
-                </a>
-            </div>
+                    <Share2Icon className="w-5 h-5 2xl:w-7 2xl:h-7 mr-6 text-green-700" />
+                    <a href={videoData?.url} download={videoData?.url}>
+                        <DownloadIcon className="w-5 h-5 2xl:w-7 2xl:h-7 text-green-700" />
+                        
+                    </a>
+                </div>
+
+            </div>) : 
+            ( <div className=" flex flex-col justify-center items-center w-full h-[75vh] text-zinc-300 text-center"> 
+                <span className="text-sm text-green-500 -mt-2 loading loading-spinner">Loading...</span>
+                <span className="text-sm font-bold text-green-500 mt-2">Carregando...</span>
+            </div> ) }
+            
         </div>
     );
 }
